@@ -1,4 +1,6 @@
 import { getEphemeralToken } from './api';
+import { getAllToolDefinitions, getToolHandler, isToolRegistered } from './tools/registry';
+import { FunctionCallData } from './tools/types';
 
 export class WebRTCClient {
   private pc: RTCPeerConnection | null = null;
@@ -172,33 +174,45 @@ export class WebRTCClient {
     const sessionUpdateEvent = {
       type: 'session.update',
       session: {
-        tools: [
-          {
-            type: 'function',
-            name: 'log_hello',
-            description: 'Logs "hello" to the console when requested by the user',
-            parameters: {
-              type: 'object',
-              properties: {},
-              required: []
-            }
-          }
-        ],
+        tools: getAllToolDefinitions(),
         tool_choice: 'auto'
       }
     };
 
     this.sendClientEvent(sessionUpdateEvent);
-    console.log('Tools configured');
+    console.log('Tools configured:', getAllToolDefinitions().map(tool => tool.name));
   }
 
-  private handleFunctionCall(functionCall: any): void {
+  private async handleFunctionCall(functionCall: FunctionCallData): Promise<void> {
     console.log('Function call received:', functionCall);
 
-    // Execute the function based on the name
-    if (functionCall.name === 'log_hello') {
-      // This is our actual function execution
-      console.log('hello');
+    // Check if the tool is registered
+    if (!isToolRegistered(functionCall.name)) {
+      console.error(`Unknown tool: ${functionCall.name}`);
+      return;
+    }
+
+    try {
+      // Get the tool handler
+      const handler = getToolHandler(functionCall.name);
+      if (!handler) {
+        console.error(`No handler found for tool: ${functionCall.name}`);
+        return;
+      }
+
+      // Parse arguments if provided
+      let args = {};
+      if (functionCall.arguments) {
+        try {
+          args = JSON.parse(functionCall.arguments);
+        } catch (error) {
+          console.error('Failed to parse function arguments:', error);
+          args = {};
+        }
+      }
+
+      // Execute the tool function
+      const result = await handler.execute(args);
 
       // Send the function result back to the model
       const resultEvent = {
@@ -206,7 +220,7 @@ export class WebRTCClient {
         item: {
           type: 'function_call_output',
           call_id: functionCall.call_id,
-          output: JSON.stringify({ result: 'Successfully logged hello to console' })
+          output: JSON.stringify(result)
         }
       };
 
@@ -218,6 +232,22 @@ export class WebRTCClient {
       };
 
       this.sendClientEvent(responseEvent);
+
+      console.log(`Tool ${functionCall.name} executed successfully`);
+    } catch (error) {
+      console.error(`Error executing tool ${functionCall.name}:`, error);
+      
+      // Send error result back to the model
+      const errorEvent = {
+        type: 'conversation.item.create',
+        item: {
+          type: 'function_call_output',
+          call_id: functionCall.call_id,
+          output: JSON.stringify({ error: `Failed to execute ${functionCall.name}: ${error}` })
+        }
+      };
+
+      this.sendClientEvent(errorEvent);
     }
   }
 
