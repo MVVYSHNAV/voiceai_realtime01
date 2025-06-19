@@ -2,15 +2,31 @@ import { getEphemeralToken } from './api';
 import { getAllToolDefinitions, getToolHandler, isToolRegistered } from './tools/registry';
 import { FunctionCallData } from './tools/types';
 
+export interface WebRTCClientOptions {
+  logSystemEvents?: boolean;
+}
+
 export class WebRTCClient {
   private pc: RTCPeerConnection | null = null;
   private dataChannel: RTCDataChannel | null = null;
   private audioElement: HTMLAudioElement | null = null;
   private micStream: MediaStream | null = null;
+  private logSystemEvents: boolean = false;
 
-  constructor() {
+  constructor(options: WebRTCClientOptions = {}) {
+    this.logSystemEvents = options.logSystemEvents ?? false;
     this.audioElement = document.createElement('audio');
     this.audioElement.autoplay = true;
+  }
+
+  public setLogSystemEvents(enabled: boolean): void {
+    this.logSystemEvents = enabled;
+  }
+
+  private systemLog(message: string, ...args: any[]): void {
+    if (this.logSystemEvents) {
+      console.log(message, ...args);
+    }
   }
 
   async initWebRTC(): Promise<void> {
@@ -53,12 +69,12 @@ export class WebRTCClient {
       }
 
       const answer = {
-        type: 'answer',
+        type: 'answer' as RTCSdpType,
         sdp: await sdpResponse.text(),
       };
 
       await this.pc.setRemoteDescription(answer);
-      console.log('WebRTC connection established');
+      this.systemLog('WebRTC connection established');
     } catch (error) {
       console.error('Error initializing WebRTC:', error);
       throw error;
@@ -84,7 +100,7 @@ export class WebRTCClient {
       }
     };
 
-    console.log(`Sending ${role} message:`, JSON.stringify(conversationEvent, null, 2));
+    this.systemLog(`Sending ${role} message:`, JSON.stringify(conversationEvent, null, 2));
     this.sendClientEvent(conversationEvent);
 
     // Only create a response if it's a user message
@@ -95,9 +111,9 @@ export class WebRTCClient {
       };
 
       this.sendClientEvent(responseEvent);
-      console.log(`${role.charAt(0).toUpperCase() + role.slice(1)} message sent, response requested:`, text);
+      this.systemLog(`${role.charAt(0).toUpperCase() + role.slice(1)} message sent, response requested:`, text);
     } else {
-      console.log(`${role.charAt(0).toUpperCase() + role.slice(1)} message sent (no response requested):`, text);
+      this.systemLog(`${role.charAt(0).toUpperCase() + role.slice(1)} message sent (no response requested):`, text);
     }
   }
 
@@ -120,7 +136,7 @@ export class WebRTCClient {
     };
 
     this.sendClientEvent(event);
-    console.log('Out-of-band request sent:', prompt);
+    this.systemLog('Out-of-band request sent:', prompt);
   }
 
   // Public method to send custom context requests
@@ -149,7 +165,7 @@ export class WebRTCClient {
     };
 
     this.sendClientEvent(event);
-    console.log('Custom context request sent:', userText);
+    this.systemLog('Custom context request sent:', userText);
   }
 
   // Public method to manually trigger a response (useful after system messages)
@@ -159,7 +175,7 @@ export class WebRTCClient {
     };
 
     this.sendClientEvent(responseEvent);
-    console.log('Manual response triggered');
+    this.systemLog('Manual response triggered');
   }
 
   private sendClientEvent(event: any): void {
@@ -180,11 +196,11 @@ export class WebRTCClient {
     };
 
     this.sendClientEvent(sessionUpdateEvent);
-    console.log('Tools configured:', getAllToolDefinitions().map(tool => tool.name));
+    this.systemLog('Tools configured:', getAllToolDefinitions().map(tool => tool.name));
   }
 
   private async handleFunctionCall(functionCall: FunctionCallData): Promise<void> {
-    console.log('Function call received:', functionCall);
+    this.systemLog('Function call received:', functionCall);
 
     // Check if the tool is registered
     if (!isToolRegistered(functionCall.name)) {
@@ -233,7 +249,7 @@ export class WebRTCClient {
 
       this.sendClientEvent(responseEvent);
 
-      console.log(`Tool ${functionCall.name} executed successfully`);
+      this.systemLog(`Tool ${functionCall.name} executed successfully`);
     } catch (error) {
       console.error(`Error executing tool ${functionCall.name}:`, error);
       
@@ -280,38 +296,38 @@ export class WebRTCClient {
     if (!this.dataChannel) return;
 
     this.dataChannel.onopen = () => {
-      console.log('Data channel opened');
+      this.systemLog('Data channel opened');
       // Configure tools after data channel is open
       this.configureTools();
     };
 
     this.dataChannel.onmessage = (event) => {
       const serverEvent = JSON.parse(event.data);
-      console.log('Received server event:', serverEvent);
+      this.systemLog('Received server event:', serverEvent);
 
       // Handle different event types
       switch (serverEvent.type) {
         case 'session.created':
-          console.log('Session created');
+          this.systemLog('Session created');
           break;
         case 'session.updated':
-          console.log('Session updated with tools');
+          this.systemLog('Session updated with tools');
           break;
         case 'input_audio_buffer.speech_started':
-          console.log('Speech started');
+          this.systemLog('Speech started');
           break;
         case 'input_audio_buffer.speech_stopped':
-          console.log('Speech stopped');
+          this.systemLog('Speech stopped');
           break;
         case 'response.done':
-          console.log('Response completed:', serverEvent.response);
+          this.systemLog('Response completed:', serverEvent.response);
           
           // Handle out-of-band responses with metadata
           if (serverEvent.response.metadata) {
-            console.log('Out-of-band response received:', serverEvent.response.metadata);
+            this.systemLog('Out-of-band response received:', serverEvent.response.metadata);
             // You can handle different types of out-of-band responses here
             if (serverEvent.response.metadata.topic === 'classification') {
-              console.log('Classification result:', serverEvent.response.output[0]);
+              this.systemLog('Classification result:', serverEvent.response.output[0]);
             }
           }
           
@@ -330,7 +346,7 @@ export class WebRTCClient {
     };
 
     this.dataChannel.onclose = () => {
-      console.log('Data channel closed');
+      this.systemLog('Data channel closed');
     };
 
     this.dataChannel.onerror = (error) => {

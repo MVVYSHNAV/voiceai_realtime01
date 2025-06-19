@@ -9,6 +9,7 @@ function App() {
   const [sendAsSystem, setSendAsSystem] = useState(false);
   const [autoContinueAfterSystem, setAutoContinueAfterSystem] = useState(true);
   const [showControls, setShowControls] = useState(false);
+  const [logSystemEvents, setLogSystemEvents] = useState(false);
   const webrtcRef = useRef<WebRTCClient | null>(null);
 
   useEffect(() => {
@@ -21,7 +22,7 @@ function App() {
   const handleConnect = async () => {
     try {
       setError(null);
-      webrtcRef.current = new WebRTCClient();
+      webrtcRef.current = new WebRTCClient({ logSystemEvents });
       await webrtcRef.current.initWebRTC();
       setIsConnected(true);
     } catch (err) {
@@ -99,6 +100,14 @@ testing or development, output "testing".
   const handleKeyPress = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter') {
       action();
+    }
+  };
+
+  const handleLogSystemEventsChange = (enabled: boolean) => {
+    setLogSystemEvents(enabled);
+    // Update the existing client if connected
+    if (webrtcRef.current) {
+      webrtcRef.current.setLogSystemEvents(enabled);
     }
   };
 
@@ -208,6 +217,18 @@ testing or development, output "testing".
                 <button onClick={handleClassificationTest} className="test-button">
                   Test Classification (Out-of-Band)
                 </button>
+              </div>
+
+              <h3>System Logging</h3>
+              <div className="checkbox-group">
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={logSystemEvents}
+                    onChange={(e) => handleLogSystemEventsChange(e.target.checked)}
+                  />
+                  Log System Events (WebRTC events, responses, etc.)
+                </label>
               </div>
             </div>
           )}
