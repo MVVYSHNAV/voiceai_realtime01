@@ -142,7 +142,7 @@ testing or development, output "testing".
           <div className="controls-toggle">
             <button 
               onClick={() => setShowControls(!showControls)}
-              className="toggle-button"
+              className="toggle-link"
             >
               {showControls ? '▼ Hide Controls' : '▶ Show Controls'}
             </button>
@@ -244,18 +244,23 @@ testing or development, output "testing".
         }
 
         .controls {
-          margin: 2rem 0;
+          margin: 1rem 0;
+        }
+
+        .controls button {
+          padding: 0.6rem 1.2rem;
+          font-size: 0.9rem;
         }
 
         button {
-          padding: 1rem 2rem;
-          font-size: 1.1rem;
+          padding: 0.25rem 0.6rem;
+          font-size: 0.75rem;
           cursor: pointer;
           background: #0070f3;
           color: white;
           border: none;
-          border-radius: 5px;
-          margin: 0.5rem;
+          border-radius: 3px;
+          margin: 0.25rem;
         }
 
         button:disabled {
@@ -265,46 +270,48 @@ testing or development, output "testing".
 
         .error {
           color: red;
-          margin: 1rem 0;
-          padding: 1rem;
+          margin: 0.5rem 0;
+          padding: 0.5rem;
           background: #ffebee;
-          border-radius: 5px;
+          border-radius: 3px;
+          font-size: 0.8rem;
         }
 
         .status {
-          margin: 1rem 0;
-          padding: 1rem;
+          margin: 0.5rem 0;
+          padding: 0.5rem;
           background: #e3f2fd;
-          border-radius: 5px;
+          border-radius: 3px;
+          font-size: 0.8rem;
         }
 
         .controls-toggle {
-          margin: 1rem 0;
-          text-align: center;
+          margin: 0.5rem 0;
+          text-align: left;
         }
 
-        .toggle-button {
-          background: #f5f5f5;
-          color: #333;
-          border: 1px solid #ddd;
-          padding: 0.75rem 1.5rem;
-          font-size: 1rem;
+        .toggle-link {
+          background: none;
+          color: #444;
+          border: none;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.75rem;
           cursor: pointer;
-          border-radius: 5px;
+          text-decoration: none;
           transition: all 0.2s ease;
         }
 
-        .toggle-button:hover {
-          background: #e9e9e9;
-          border-color: #bbb;
+        .toggle-link:hover {
+          color: #222;
+          text-decoration: none;
         }
 
         .text-controls {
-          margin: 2rem 0;
-          padding: 1.5rem;
+          margin: 1rem 0;
+          padding: 0.75rem;
           border: 1px solid #ddd;
-          border-radius: 8px;
-          background: #f9f9f9;
+          border-radius: 4px;
+          background: transparent;
           animation: slideDown 0.3s ease-out;
         }
 
@@ -320,55 +327,64 @@ testing or development, output "testing".
         }
 
         .text-controls h3 {
-          margin: 1rem 0 0.5rem 0;
+          margin: 0.5rem 0 0.25rem 0;
           color: #333;
+          font-size: 0.8rem;
+          font-weight: 600;
         }
 
         .input-group {
           display: flex;
-          gap: 0.5rem;
-          margin: 1rem 0;
+          gap: 0.25rem;
+          margin: 0.5rem 0;
         }
 
         .checkbox-group {
-          margin: 0.5rem 0 1rem 0;
+          margin: 0.25rem 0 0.5rem 0;
         }
 
         .checkbox-label {
           display: flex;
           align-items: center;
-          gap: 0.5rem;
-          font-size: 0.9rem;
+          gap: 0.25rem;
+          font-size: 0.7rem;
           color: #666;
           cursor: pointer;
         }
 
         .checkbox-label input[type="checkbox"] {
           margin: 0;
+          transform: scale(0.8);
         }
 
         .text-input {
           flex: 1;
-          padding: 0.75rem;
-          font-size: 1rem;
+          padding: 0.25rem 0.35rem;
+          font-size: 0.75rem;
           border: 1px solid #ddd;
-          border-radius: 4px;
+          border-radius: 3px;
         }
 
         .quick-buttons {
           display: flex;
-          gap: 0.5rem;
+          gap: 0.25rem;
           flex-wrap: wrap;
         }
 
         .test-button {
-          background: #28a745;
-          padding: 0.75rem 1.5rem;
-          font-size: 0.9rem;
+          background: none;
+          color: #28a745;
+          border: none;
+          padding: 0.1rem 0.25rem;
+          font-size: 0.7rem;
+          text-decoration: underline;
+          cursor: pointer;
+          transition: all 0.2s ease;
         }
 
         .test-button:hover {
-          background: #218838;
+          color: #218838;
+          text-decoration: none;
         }
       `}</style>
     </div>
