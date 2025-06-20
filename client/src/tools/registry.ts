@@ -1,16 +1,26 @@
 import { ToolRegistry } from './types';
 import { logHelloDefinition, logHelloHandler } from './logHello';
 import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTime';
+import { sendEmailDefinition, sendEmailHandler } from './sendEmail';
+import { sendWaDefinition, sendWaHandler } from './sendWa';
 
 // Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
-  log_hello: {
+log_hello: {
     definition: logHelloDefinition,
     handler: logHelloHandler
   },
   get_current_time: {
     definition: getCurrentTimeDefinition,
     handler: getCurrentTimeHandler
+  },
+  send_email: {
+    definition: sendEmailDefinition,
+    handler: sendEmailHandler
+  },
+  send_wa: {
+    definition: sendWaDefinition,
+    handler: sendWaHandler
   }
 };
 
