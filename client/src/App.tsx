@@ -1,9 +1,29 @@
-import { RealtimeCall } from './components/RealtimeCall';
+import { Navigation } from './components/Navigation';
+import { Homepage } from './components/Homepage';
+import { Products } from './components/Products';
+import { Util } from './components/Util';
+import { useRouter } from './hooks/useRouter';
 
 function App() {
+  const { currentPath, navigate } = useRouter();
+
+  const renderPage = () => {
+    switch (currentPath) {
+      case 'products':
+        return <Products />;
+      case 'util':
+        return <Util />;
+      default:
+        return <Homepage />;
+    }
+  };
+
   return (
-    <div>
-      <RealtimeCall />
+    <div className="min-h-screen flex flex-col bg-white text-gray-900">
+      <Navigation currentPath={currentPath} onNavigate={navigate} />
+      <main className="flex-1">
+        {renderPage()}
+      </main>
     </div>
   );
 }

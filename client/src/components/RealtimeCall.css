@@ -378,8 +378,8 @@
   text-decoration: none;
 }
 
-/* General Button Styles */
-button {
+/* General Button Styles - Scoped to RealtimeCall component only */
+.realtime-call button {
   padding: 0.25rem 0.6rem;
   font-size: 0.75rem;
   cursor: pointer;
@@ -390,7 +390,7 @@ button {
   margin: 0.25rem;
 }
 
-button:disabled {
+.realtime-call button:disabled {
   background: #ccc;
   cursor: not-allowed;
 }

@@ -3,6 +3,7 @@ import { logHelloDefinition, logHelloHandler } from './logHello';
 import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTime';
 import { sendEmailDefinition, sendEmailHandler } from './sendEmail';
 import { sendWaDefinition, sendWaHandler } from './sendWa';
+import { makeCallDefinition, makeCallHandler } from './makeCall';
 
 // Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
@@ -21,6 +22,10 @@ log_hello: {
   send_wa: {
     definition: sendWaDefinition,
     handler: sendWaHandler
+  },
+  make_call: {
+    definition: makeCallDefinition,
+    handler: makeCallHandler
   }
 };
 

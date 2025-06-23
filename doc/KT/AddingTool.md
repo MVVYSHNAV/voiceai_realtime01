@@ -1,64 +1,150 @@
-Great question! Let me point you to the specific parts of the code where the tool calling functionality is implemented:
+# Tool System Architecture & Adding New Tools
 
-## 1. Tool Definition (Where we define the function)
+This document explains how the modular tool system works and how to add new tools to the OpenAI Realtime API voice agent.
 
-In `client/src/webrtc.ts`, lines 61-75:
+## Current Architecture Overview
+
+The tool system has been refactored into a modular architecture with these components:
+
+```
+client/src/tools/
+├── types.ts           # TypeScript interfaces for type safety
+├── registry.ts        # Central tool registry and helper functions  
+├── logHello.ts        # Example: log_hello tool implementation
+├── getCurrentTime.ts  # Example: get_current_time tool with parameters
+└── README.md          # Complete documentation
+```
+
+## 1. Tool Definition & Implementation
+
+### Example: logHello.ts
+
+```typescript
+import { ToolDefinition, ToolHandler } from './types';
+
+// Tool definition for OpenAI
+export const logHelloDefinition: ToolDefinition = {
+  type: 'function',
+  name: 'log_hello',
+  description: 'Logs "hello" to the console when requested by the user',
+  parameters: {
+    type: 'object',
+    properties: {},
+    required: []
+  }
+};
+
+// Tool handler implementation
+export const logHelloHandler: ToolHandler = {
+  execute(): any {
+    // This is our actual function execution - THE HELLO IS LOGGED HERE!
+    console.log('hello');
+    
+    // Return the result that will be sent back to OpenAI
+    return { result: 'Successfully logged hello to console' };
+  }
+};
+```
+
+## 2. Tool Registration (registry.ts)
+
+```typescript
+import { ToolRegistry } from './types';
+import { logHelloDefinition, logHelloHandler } from './logHello';
+import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTime';
+
+// Central registry of all available tools
+export const toolRegistry: ToolRegistry = {
+  log_hello: {
+    definition: logHelloDefinition,
+    handler: logHelloHandler
+  },
+  get_current_time: {
+    definition: getCurrentTimeDefinition,
+    handler: getCurrentTimeHandler
+  }
+};
+
+// Helper functions for WebRTC client
+export function getAllToolDefinitions() {
+  return Object.values(toolRegistry).map(tool => tool.definition);
+}
+
+export function getToolHandler(toolName: string) {
+  return toolRegistry[toolName]?.handler;
+}
+
+export function isToolRegistered(toolName: string): boolean {
+  return toolName in toolRegistry;
+}
+```
+
+## 3. Tool Configuration in WebRTC (webrtc.ts)
+
+### Session Update (Making OpenAI Aware of Tools)
+
+In `client/src/webrtc.ts`, lines ~188-198:
 
 ```typescript
 private configureTools(): void {
   const sessionUpdateEvent = {
     type: 'session.update',
     session: {
-      tools: [
-        {
-          type: 'function',
-          name: 'log_hello',
-          description: 'Logs "hello" to the console when requested by the user',
-          parameters: {
-            type: 'object',
-            properties: {},
-            required: []
-          }
-        }
-      ],
+      tools: getAllToolDefinitions(),  // Loads all tools from registry
       tool_choice: 'auto'
     }
   };
 
   this.sendClientEvent(sessionUpdateEvent);
-  console.log('Tools configured');
+  this.systemLog('Tools configured:', getAllToolDefinitions().map(tool => tool.name));
 }
 ```
 
-## 2. Making OpenAI Aware of the Tool (Session Update)
-
-This happens in the same `configureTools()` method above. The key part is:
-- We send a `session.update` event to OpenAI
-- This tells the model that it has access to the `log_hello` function
-- The `tool_choice: 'auto'` means the model can decide when to use it
-
-This is called from the data channel's `onopen` event handler (line 147):
+This is called from the data channel's `onopen` event handler:
 
 ```typescript
 this.dataChannel.onopen = () => {
-  console.log('Data channel opened');
+  this.systemLog('Data channel opened');
   // Configure tools after data channel is open
   this.configureTools();
 };
 ```
 
-## 3. Tool Execution (Where "hello" is actually logged)
+## 4. Tool Execution (webrtc.ts)
 
-In `client/src/webrtc.ts`, lines 81-104:
+In `client/src/webrtc.ts`, lines ~200-270:
 
 ```typescript
-private handleFunctionCall(functionCall: any): void {
-  console.log('Function call received:', functionCall);
+private async handleFunctionCall(functionCall: FunctionCallData): Promise<void> {
+  this.systemLog('Function call received:', functionCall);
 
-  // Execute the function based on the name
-  if (functionCall.name === 'log_hello') {
-    // This is our actual function execution - THE HELLO IS LOGGED HERE!
-    console.log('hello');
+  // Check if the tool is registered
+  if (!isToolRegistered(functionCall.name)) {
+    console.error(`Unknown tool: ${functionCall.name}`);
+    return;
+  }
+
+  try {
+    // Get the tool handler from registry
+    const handler = getToolHandler(functionCall.name);
+    if (!handler) {
+      console.error(`No handler found for tool: ${functionCall.name}`);
+      return;
+    }
+
+    // Parse arguments if provided
+    let args = {};
+    if (functionCall.arguments) {
+      try {
+        args = JSON.parse(functionCall.arguments);
+      } catch (error) {
+        console.error('Failed to parse function arguments:', error);
+        args = {};
+      }
+    }
+
+    // Execute the tool function - THIS IS WHERE THE TOOL RUNS!
+    const result = await handler.execute(args);
 
     // Send the function result back to the model
     const resultEvent = {
@@ -66,7 +152,7 @@ private handleFunctionCall(functionCall: any): void {
       item: {
         type: 'function_call_output',
         call_id: functionCall.call_id,
-        output: JSON.stringify({ result: 'Successfully logged hello to console' })
+        output: JSON.stringify(result)
       }
     };
 
@@ -78,37 +164,122 @@ private handleFunctionCall(functionCall: any): void {
     };
 
     this.sendClientEvent(responseEvent);
+
+    this.systemLog(`Tool ${functionCall.name} executed successfully`);
+  } catch (error) {
+    console.error(`Error executing tool ${functionCall.name}:`, error);
+    
+    // Send error result back to the model
+    const errorEvent = {
+      type: 'conversation.item.create',
+      item: {
+        type: 'function_call_output',
+        call_id: functionCall.call_id,
+        output: JSON.stringify({ error: `Failed to execute ${functionCall.name}: ${error}` })
+      }
+    };
+
+    this.sendClientEvent(errorEvent);
   }
 }
 ```
 
-**The actual `console.log('hello')` happens on line 87!**
+## 5. Function Call Detection
 
-## 4. Function Call Detection (Where we detect OpenAI wants to call the function)
-
-In `client/src/webrtc.ts`, lines 170-177:
+In the WebRTC message handler:
 
 ```typescript
 case 'response.done':
-  console.log('Response completed:', serverEvent.response);
+  this.systemLog('Response completed:', serverEvent.response);
+  
   // Check if response contains a function call
   if (serverEvent.response.output && serverEvent.response.output.length > 0) {
     const output = serverEvent.response.output[0];
     if (output.type === 'function_call') {
-      this.handleFunctionCall(output);
+      this.handleFunctionCall(output);  // Routes to modular handler
     }
   }
   break;
 ```
 
-## Flow Summary:
+## How to Add a New Tool (3 Simple Steps)
 
-1. **Tool Registration**: `configureTools()` tells OpenAI about our `log_hello` function
-2. **User Request**: User says something like "log hello" or "use the log hello function"
-3. **OpenAI Decision**: Model decides to call `log_hello` function
-4. **Function Call Detection**: We detect the function call in the `response.done` event
-5. **Function Execution**: `handleFunctionCall()` executes `console.log('hello')`
-6. **Result Reporting**: We send the result back to OpenAI
-7. **Response Generation**: OpenAI generates a response acknowledging the function was executed
+### Step 1: Create Tool File
 
-The key insight is that the actual `console.log('hello')` happens in your client-side JavaScript code, not on OpenAI's servers. OpenAI just tells you to call the function, and you execute it locally!
+Create `client/src/tools/myNewTool.ts`:
+
+```typescript
+import { ToolDefinition, ToolHandler } from './types';
+
+export const myNewToolDefinition: ToolDefinition = {
+  type: 'function',
+  name: 'my_new_tool',
+  description: 'Description of what your tool does',
+  parameters: {
+    type: 'object',
+    properties: {
+      param1: {
+        type: 'string',
+        description: 'Description of param1'
+      }
+    },
+    required: ['param1']
+  }
+};
+
+export const myNewToolHandler: ToolHandler = {
+  execute(args: { param1: string }): any {
+    // Your tool logic here
+    console.log('Executing my new tool with:', args);
+    
+    // Return the result that will be sent back to OpenAI
+    return { result: 'Tool executed successfully', input: args.param1 };
+  }
+};
+```
+
+### Step 2: Register in Registry
+
+Add to `client/src/tools/registry.ts`:
+
+```typescript
+import { myNewToolDefinition, myNewToolHandler } from './myNewTool';
+
+export const toolRegistry: ToolRegistry = {
+  // ... existing tools
+  my_new_tool: {
+    definition: myNewToolDefinition,
+    handler: myNewToolHandler
+  }
+};
+```
+
+### Step 3: That's It!
+
+Your tool is now automatically:
+- ✅ Loaded into the OpenAI session
+- ✅ Available for the AI to call
+- ✅ Routed to your handler when called
+- ✅ Error handled gracefully
+
+## Flow Summary
+
+1. **Tool Registration**: Registry loads all tool definitions into session
+2. **User Request**: User asks AI to use a tool
+3. **OpenAI Decision**: Model decides to call the tool
+4. **Function Call Detection**: WebRTC detects function call in response
+5. **Tool Execution**: Registry routes call to appropriate handler
+6. **Result Reporting**: Handler result sent back to OpenAI
+7. **Response Generation**: OpenAI generates response with tool results
+
+## Key Benefits of New Architecture
+
+- **Modular**: Each tool is completely self-contained
+- **Type Safe**: Full TypeScript support with proper interfaces
+- **Error Handling**: Automatic error handling and reporting
+- **Easy Testing**: Tools can be tested independently
+- **No Risk**: Adding tools won't break existing WebRTC functionality
+- **Async Support**: Tools can be synchronous or asynchronous
+- **Automatic Registration**: Tools are automatically available once registered
+
+The key insight remains: the actual tool execution happens in your client-side JavaScript code, not on OpenAI's servers. OpenAI just tells you to call the function, and the modular system routes it to the appropriate handler!

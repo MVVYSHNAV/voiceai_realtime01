@@ -9,7 +9,8 @@
   "scripts": {
     "dev:client": "cd client && bun run dev",
     "dev:server": "cd server && bun run dev",
-    "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\""
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:client\"",
+    "generate-tool": "cd client && bun run generate-tool"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
