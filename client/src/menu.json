@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1,
+    "name": "Margherita Pizza",
+    "category": "Pizza",
+    "description": "Classic cheese pizza with fresh basil and tomato sauce.",
+    "price": 299,
+    "image": "images/pizza-margherita.jpg",
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Chicken Biryani",
+    "category": "Rice",
+    "description": "Spicy chicken biryani with basmati rice and aromatic spices.",
+    "price": 249,
+    "image": "images/chicken-biryani.jpg",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Veg Burger",
+    "category": "Burger",
+    "description": "Grilled vegetable patty with lettuce, tomato, and cheese.",
+    "price": 149,
+    "image": "images/veg-burger.jpg",
+    "available": true
+  },
+  {
+    "id": 4,
+    "name": "Paneer Butter Masala",
+    "category": "Curry",
+    "description": "Cottage cheese cubes cooked in a creamy tomato-based gravy.",
+    "price": 199,
+    "image": "images/paneer-butter-masala.jpg",
+    "available": true
+  },
+  {
+    "id": 5,
+    "name": "French Fries",
+    "category": "Snacks",
+    "description": "Crispy golden fries served with ketchup.",
+    "price": 99,
+    "image": "images/french-fries.jpg",
+    "available": true
+  },
+  {
+    "id": 6,
+    "name": "Masala Dosa",
+    "category": "South Indian",
+    "description": "Thin rice crepe filled with spiced mashed potatoes.",
+    "price": 129,
+    "image": "images/masala-dosa.jpg",
+    "available": true
+  },
+  {
+    "id": 7,
+    "name": "Caesar Salad",
+    "category": "Salad",
+    "description": "Fresh lettuce with Caesar dressing, croutons, and parmesan.",
+    "price": 179,
+    "image": "images/caesar-salad.jpg",
+    "available": false
+  },
+  {
+    "id": 8,
+    "name": "Tandoori Chicken",
+    "category": "Tandoori",
+    "description": "Chicken legs marinated in spices and grilled in a tandoor.",
+    "price": 269,
+    "image": "images/tandoori-chicken.jpg",
+    "available": true
+  },
+  {
+    "id": 9,
+    "name": "Chole Bhature",
+    "category": "North Indian",
+    "description": "Spicy chickpeas served with fluffy fried bread.",
+    "price": 159,
+    "image": "images/chole-bhature.jpg",
+    "available": true
+  },
+  {
+    "id": 10,
+    "name": "Chocolate Brownie",
+    "category": "Dessert",
+    "description": "Rich and gooey chocolate brownie with nuts.",
+    "price": 89,
+    "image": "images/chocolate-brownie.jpg",
+    "available": true
+  }
+]
