@@ -21,7 +21,7 @@ export function Homepage() {
       <section className="py-32 px-4 text-center bg-gray-50">
         <div className="container mx-auto">
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight mb-6 text-gray-900">
-            Voice Agent
+            Tomorrow
             <br />
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Reimagined</span>
           </h1>

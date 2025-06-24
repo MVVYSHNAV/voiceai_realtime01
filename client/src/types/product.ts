@@ -9,14 +9,13 @@ export interface Product {
   category: string;
   brand: string;
   inStock: boolean;
+  stock?: number;
+  releaseDate?: string;
   description: string;
   features: string[];
 }
 
-export interface SortOption {
-  value: string;
-  label: string;
-}
+export type SortOption = 'featured' | 'price-low' | 'price-high' | 'rating' | 'newest';
 
 export interface CartItem {
   product: Product;
@@ -27,5 +26,4 @@ export interface ProductData {
   products: Product[];
   categories: string[];
   brands: string[];
-  sortOptions: SortOption[];
 } 

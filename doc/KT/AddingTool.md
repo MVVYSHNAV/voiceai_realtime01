@@ -1,6 +1,6 @@
 # Tool System Architecture & Adding New Tools
 
-This document explains how the modular tool system works and how to add new tools to the OpenAI Realtime API voice agent.
+This document explains how the modular tool system works and how to add new tools to Tomorrow (OpenAI Realtime API voice agent).
 
 ## Current Architecture Overview
 

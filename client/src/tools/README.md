@@ -1,6 +1,6 @@
 # Tools System
 
-This directory contains the modular tool system for the OpenAI Realtime API voice agent. Tools are completely separated from the main WebRTC logic, making it easy to add new functionality without risking breaking existing code.
+This directory contains the modular tool system for Tomorrow (OpenAI Realtime API voice agent). Tools are completely separated from the main WebRTC logic, making it easy to add new functionality without risking breaking existing code.
 
 ## Architecture
 
@@ -75,16 +75,99 @@ Your tool is now automatically available to the OpenAI model. The WebRTC client 
 
 ## Current Tools
 
-### log_hello
+### Basic Tools
+
+#### log_hello
 - **Purpose**: Simple example tool that logs "hello" to console
 - **Parameters**: None
 - **Usage**: Ask the AI to "log hello" or "use the log hello function"
 
-### get_current_time
+#### get_current_time
 - **Purpose**: Gets the current date and time
 - **Parameters**: 
   - `format` (optional): "12h" or "24h" format preference
 - **Usage**: Ask the AI "what time is it?" or "get current time in 24h format"
+
+### Communication Tools
+
+#### send_email
+- **Purpose**: Send email to user (placeholder implementation)
+- **Parameters**:
+  - `email` (required): User's email address
+- **Usage**: Ask the AI to "send email to user@example.com"
+
+#### send_wa
+- **Purpose**: Send WhatsApp message to a phone number (placeholder implementation)
+- **Parameters**:
+  - `phone_number` (required): Phone number with international code
+- **Usage**: Ask the AI to "send WhatsApp to +1234567890"
+
+#### make_call
+- **Purpose**: Make a phone call and read a message (placeholder implementation)
+- **Parameters**:
+  - `phone_number` (required): Phone number with international code
+- **Usage**: Ask the AI to "call +1234567890"
+
+### Navigation Tools
+
+#### navigate_page
+- **Purpose**: Navigate to different pages in the application
+- **Parameters**:
+  - `page` (required): Page to navigate to ("", "products", "util")
+  - `params` (optional): Query parameters for the page
+- **Usage**: 
+  - "Go to the products page"
+  - "Navigate to home"
+  - "Take me to the utilities page"
+
+#### get_available_pages
+- **Purpose**: Get information about all available pages and current location
+- **Parameters**: None
+- **Usage**: 
+  - "What pages are available?"
+  - "Where am I currently?"
+  - "Show me all available pages"
+
+### Product Tools
+
+#### search_products
+- **Purpose**: Search for products and navigate to results
+- **Parameters**:
+  - `search_term` (required): Keyword to search for
+  - `category` (optional): Filter by category
+  - `brand` (optional): Filter by brand
+  - `sort` (optional): Sort order for results
+- **Usage**:
+  - "Search for headphones"
+  - "Find Sony audio products"
+  - "Search for cameras sorted by price"
+
+#### apply_product_filters
+- **Purpose**: Apply comprehensive filters to the products page
+- **Parameters**:
+  - `search` (optional): Search term
+  - `category` (optional): Product category
+  - `brand` (optional): Product brand
+  - `min_price` (optional): Minimum price
+  - `max_price` (optional): Maximum price
+  - `sort` (optional): Sort order
+  - `page` (optional): Page number
+- **Usage**:
+  - "Show me Apple products under $500"
+  - "Filter products by Audio category"
+  - "Show expensive products over $1000"
+  - "Sort products by rating"
+
+## Available Categories
+- Audio, Wearables, Photography, Furniture, Lighting
+- Computers, Phones, Electronics, Gaming, Accessories
+
+## Available Brands
+- Sony, Apple, Canon, Herman Miller, Dyson
+- JBL, Samsung, Bose, Nintendo, Tesla
+
+## Sort Options
+- featured, price-low, price-high, rating, newest
 
 ## Benefits of This Architecture
 

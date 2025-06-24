@@ -4,10 +4,14 @@ import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTim
 import { sendEmailDefinition, sendEmailHandler } from './sendEmail';
 import { sendWaDefinition, sendWaHandler } from './sendWa';
 import { makeCallDefinition, makeCallHandler } from './makeCall';
+import { navigatePageDefinition, navigatePageHandler } from './navigatePage';
+import { getAvailablePagesDefinition, getAvailablePagesHandler } from './getAvailablePages';
+import { searchProductsDefinition, searchProductsHandler } from './searchProducts';
+import { applyProductFiltersDefinition, applyProductFiltersHandler } from './applyProductFilters';
 
 // Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
-log_hello: {
+  log_hello: {
     definition: logHelloDefinition,
     handler: logHelloHandler
   },
@@ -26,6 +30,22 @@ log_hello: {
   make_call: {
     definition: makeCallDefinition,
     handler: makeCallHandler
+  },
+  navigate_page: {
+    definition: navigatePageDefinition,
+    handler: navigatePageHandler
+  },
+  get_available_pages: {
+    definition: getAvailablePagesDefinition,
+    handler: getAvailablePagesHandler
+  },
+  search_products: {
+    definition: searchProductsDefinition,
+    handler: searchProductsHandler
+  },
+  apply_product_filters: {
+    definition: applyProductFiltersDefinition,
+    handler: applyProductFiltersHandler
   }
 };
 

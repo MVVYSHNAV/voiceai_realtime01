@@ -34,7 +34,7 @@ export function Navigation({ currentPath, onNavigate }: NavigationProps) {
               onClick={() => handleNavigation('')}
               className="text-lg font-bold text-gray-900 hover:text-gray-700 transition-colors"
             >
-              Voice Agent
+              Tomorrow
             </button>
             
             {/* Right Side - Menu + Cart */}

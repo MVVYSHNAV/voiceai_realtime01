@@ -1,4 +1,4 @@
-# OpenAI Realtime API Voice Agent
+# Tomorrow - OpenAI Realtime API Voice Agent
 
 A modern voice agent interface built with OpenAI's Realtime API, featuring real-time voice conversations and a modular tool system.
 
@@ -96,7 +96,7 @@ voice-agent/
 
 ## Tool System
 
-The voice agent features a modular tool system that allows the AI to call JavaScript functions. Tools are:
+Tomorrow features a modular tool system that allows the AI to call JavaScript functions. Tools are:
 
 - **Modular** - Each tool is a separate file
 - **Type-safe** - Full TypeScript support
@@ -121,7 +121,7 @@ The voice agent features a modular tool system that allows the AI to call JavaSc
 
 3. **Test your tool**
    - Start the dev server: `bun run dev`
-   - Connect to the voice agent
+   - Connect to Tomorrow
    - Ask the AI to use your tool
 
 ## Environment Variables

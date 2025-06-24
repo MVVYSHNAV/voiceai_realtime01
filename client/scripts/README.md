@@ -1,6 +1,6 @@
 # Tool Generator
 
-Interactive CLI tool to generate new tool scaffolding for the OpenAI Realtime API voice agent.
+Interactive CLI tool to generate new tool scaffolding for Tomorrow (OpenAI Realtime API voice agent).
 
 ## Usage
 
