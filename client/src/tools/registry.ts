@@ -1,5 +1,5 @@
 import { ToolRegistry } from './types';
-import { logHelloDefinition, logHelloHandler } from './logHello';
+import { loggerDefinition, loggerHandler } from './logger';
 import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTime';
 import { sendEmailDefinition, sendEmailHandler } from './sendEmail';
 import { sendWaDefinition, sendWaHandler } from './sendWa';
@@ -9,12 +9,19 @@ import { getAvailablePagesDefinition, getAvailablePagesHandler } from './getAvai
 import { searchProductsDefinition, searchProductsHandler } from './searchProducts';
 import { applyProductFiltersDefinition, applyProductFiltersHandler } from './applyProductFilters';
 import { openFloatingChatDefinition, openFloatingChatHandler } from './openFloatingChat';
+import { viewProductDefinition, viewProductHandler } from './viewProduct';
+import { openProductDefinition, openProductHandler } from './openProduct';
+import { testOpenProductDefinition, testOpenProductHandler } from './testOpenProduct';
+import { getContextDefinition, getContextHandler } from './getContext';
+import { testContextDefinition, testContextHandler } from './testContext';
+import { testLoggerDefinition, testLoggerHandler } from './testLogger';
+import { debugToolsDefinition, debugToolsHandler } from './debugTools';
 
 // Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
-  log_hello: {
-    definition: logHelloDefinition,
-    handler: logHelloHandler
+  logger: {
+    definition: loggerDefinition,
+    handler: loggerHandler
   },
   get_current_time: {
     definition: getCurrentTimeDefinition,
@@ -51,6 +58,39 @@ export const toolRegistry: ToolRegistry = {
   open_floating_chat: {
     definition: openFloatingChatDefinition,
     handler: openFloatingChatHandler
+  },
+  view_product: {
+    definition: viewProductDefinition,
+    handler: viewProductHandler
+  },
+  open_product: {
+    definition: openProductDefinition,
+    handler: openProductHandler
+  },
+  test_open_product: {
+    definition: testOpenProductDefinition,
+    handler: testOpenProductHandler
+  },
+  get_context: {
+    definition: getContextDefinition,
+    handler: getContextHandler
+  },
+  test_context: {
+    definition: testContextDefinition,
+    handler: testContextHandler
+  },
+  test_logger: {
+    definition: testLoggerDefinition,
+    handler: testLoggerHandler
+  },
+  debug_tools: {
+    definition: debugToolsDefinition,
+    handler: debugToolsHandler
+  },
+  // Add camelCase alias for getContext in case OpenAI is calling it that way
+  getContext: {
+    definition: getContextDefinition,
+    handler: getContextHandler
   }
 };
 

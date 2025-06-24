@@ -77,10 +77,15 @@ Your tool is now automatically available to the OpenAI model. The WebRTC client 
 
 ### Basic Tools
 
-#### log_hello
-- **Purpose**: Simple example tool that logs "hello" to console
-- **Parameters**: None
-- **Usage**: Ask the AI to "log hello" or "use the log hello function"
+#### logger
+- **Purpose**: Logs any message to the console with different log levels
+- **Parameters**: 
+  - `message` (required): The message to log
+  - `level` (optional): Log level - "info", "warn", "error", or "debug" (defaults to "info")
+- **Usage**: 
+  - "Log a message saying 'Hello World'"
+  - "Log an error message about the connection"
+  - "Log a warning about low battery"
 
 #### get_current_time
 - **Purpose**: Gets the current date and time
@@ -158,6 +163,36 @@ Your tool is now automatically available to the OpenAI model. The WebRTC client 
   - "Show expensive products over $1000"
   - "Sort products by rating"
 
+#### open_product
+- **Purpose**: Open/view a specific product detail page with advanced search capabilities
+- **Parameters**:
+  - `searchQuery` (required): Search query - can be product ID, name, brand, category, or combination
+- **Search Methods**:
+  - **Product ID**: Exact match (e.g., "1", "15")
+  - **Product Name**: Exact or partial match (e.g., "iPhone 15 Pro Max", "MacBook")
+  - **Brand**: Find products by brand (e.g., "Apple", "Sony", "Canon")
+  - **Category**: Find products by category (e.g., "Audio", "Photography", "Computers")
+  - **Combined**: Brand + product type (e.g., "Apple Watch", "Sony headphones", "Canon lens")
+  - **Keywords**: Search in description and features
+- **Usage Examples**:
+  - "Open product 1" - Opens product with ID 1
+  - "Show me the iPhone 15 Pro Max" - Finds by exact name
+  - "Open Apple Watch" - Finds Apple Watch products
+  - "Show me Sony headphones" - Finds Sony audio products
+  - "Open Canon lens" - Finds Canon photography products
+  - "Show me Herman Miller chair" - Finds furniture by brand
+- **Features**:
+  - Intelligent search with multiple fallback methods
+  - Provides alternatives when multiple matches found
+  - Helpful suggestions when no matches found
+  - Returns product details and context information
+
+#### view_product
+- **Purpose**: Navigate to a product detail page (legacy tool, use open_product for better search)
+- **Parameters**:
+  - `identifier` (required): Product ID or product name
+- **Usage**: Basic product viewing by ID or name
+
 ### UI Tools
 
 #### open_floating_chat
@@ -191,6 +226,24 @@ Your tool is now automatically available to the OpenAI model. The WebRTC client 
 5. **No Risk**: Adding tools won't break existing WebRTC functionality
 6. **Async Support**: Tools can be synchronous or asynchronous
 7. **Automatic Registration**: Tools are automatically available once registered
+
+### Testing Tools
+
+#### test_open_product
+- **Purpose**: Test the openProduct tool with various search examples to demonstrate its capabilities
+- **Parameters**:
+  - `testType` (required): Type of test to run
+    - "all" - Run all test types
+    - "id" - Test ID-based searches
+    - "name" - Test name-based searches
+    - "brand" - Test brand-based searches
+    - "category" - Test category-based searches
+    - "combination" - Test combined searches
+- **Usage**:
+  - "Test the open product tool" - Runs all tests
+  - "Test product ID searches" - Tests ID-based searches only
+  - "Test brand searches" - Tests brand-based searches only
+- **Returns**: Comprehensive test results with success rates and usage examples
 
 ## Tool Handler Guidelines
 

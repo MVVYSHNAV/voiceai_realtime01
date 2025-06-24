@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Product, CartItem } from '../types/product';
+import { CartItem } from '../types/product';
 
 export function useCart() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -21,24 +21,24 @@ export function useCart() {
     localStorage.setItem('cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  const addToCart = (product: Product, quantity: number = 1) => {
+  const addToCart = (item: CartItem) => {
     setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.product.id === product.id);
+      const existingItem = prevItems.find(cartItem => cartItem.id === item.id);
       
       if (existingItem) {
-        return prevItems.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
+        return prevItems.map(cartItem =>
+          cartItem.id === item.id
+            ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+            : cartItem
         );
       } else {
-        return [...prevItems, { product, quantity }];
+        return [...prevItems, item];
       }
     });
   };
 
   const removeFromCart = (productId: number) => {
-    setCartItems(prevItems => prevItems.filter(item => item.product.id !== productId));
+    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
   };
 
   const updateQuantity = (productId: number, quantity: number) => {
@@ -49,7 +49,7 @@ export function useCart() {
 
     setCartItems(prevItems =>
       prevItems.map(item =>
-        item.product.id === productId
+        item.id === productId
           ? { ...item, quantity }
           : item
       )
@@ -61,7 +61,7 @@ export function useCart() {
   };
 
   const getCartTotal = () => {
-    return cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+    return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
   };
 
   const getCartItemCount = () => {
@@ -69,7 +69,7 @@ export function useCart() {
   };
 
   const isInCart = (productId: number) => {
-    return cartItems.some(item => item.product.id === productId);
+    return cartItems.some(item => item.id === productId);
   };
 
   return {

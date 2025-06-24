@@ -1,6 +1,7 @@
 import { Navigation } from './components/Navigation';
 import { Homepage } from './components/Homepage';
 import { Products } from './components/Products';
+import { ProductDetail } from './components/ProductDetail';
 import { Util } from './components/Util';
 import { FloatingChat } from './components/FloatingChat';
 import { useRouter } from './hooks/useRouter';
@@ -12,6 +13,8 @@ function App() {
     switch (currentPath) {
       case 'products':
         return <Products />;
+      case 'product':
+        return <ProductDetail />;
       case 'util':
         return <Util />;
       default:

@@ -1,5 +1,5 @@
 import { getEphemeralToken } from './api';
-import { getAllToolDefinitions, getToolHandler, isToolRegistered } from './tools/registry';
+import { getAllToolDefinitions, getToolHandler, isToolRegistered, toolRegistry } from './tools/registry';
 import { FunctionCallData } from './tools/types';
 
 export interface WebRTCClientOptions {
@@ -202,9 +202,16 @@ export class WebRTCClient {
   private async handleFunctionCall(functionCall: FunctionCallData): Promise<void> {
     this.systemLog('Function call received:', functionCall);
 
+    // Enhanced debugging for tool lookup
+    console.log('=== TOOL CALL DEBUG ===');
+    console.log('Requested tool name:', functionCall.name);
+    console.log('Available tools:', Object.keys(toolRegistry));
+    console.log('Is tool registered:', isToolRegistered(functionCall.name));
+
     // Check if the tool is registered
     if (!isToolRegistered(functionCall.name)) {
       console.error(`Unknown tool: ${functionCall.name}`);
+      console.error('Available tools:', Object.keys(toolRegistry));
       return;
     }
 

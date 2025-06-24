@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useCart } from '../hooks/useCart';
+import { navigateTo } from '../utils/navigation';
 import type { Product } from '../types/product';
 
 interface ProductCardProps {
@@ -12,12 +13,23 @@ export function ProductCard({ product }: ProductCardProps) {
   const [showQuickView, setShowQuickView] = useState(false);
 
   const handleAddToCart = () => {
-    addToCart(product);
+    addToCart({
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      image: product.image,
+      quantity: 1
+    });
+  };
+
+  const handleProductClick = () => {
+    navigateTo(`product?id=${product.id}`);
   };
 
   const getStockStatus = () => {
     if (!product.inStock) return { text: 'Out of Stock', className: 'text-red-600' };
-    if (product.stock && product.stock < 10) return { text: 'Low Stock', className: 'text-yellow-600' };
+    if (product.stockCount && product.stockCount < 10) return { text: 'Low Stock', className: 'text-yellow-600' };
     return { text: 'In Stock', className: 'text-green-600' };
   };
 
@@ -26,7 +38,11 @@ export function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="bg-white rounded border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-300 group h-full flex flex-col relative">
       {/* Image Container with Compact Height */}
-      <div className="relative overflow-hidden bg-gray-50" style={{ height: '192px' }}>
+      <div 
+        className="relative overflow-hidden bg-gray-50 cursor-pointer" 
+        style={{ height: '192px' }}
+        onClick={handleProductClick}
+      >
         <img
           src={product.image}
           alt={product.name}
@@ -91,7 +107,10 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Product Name - Compact */}
-        <h3 className="font-semibold text-gray-900 mb-2 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors">
+        <h3 
+          className="font-semibold text-gray-900 mb-2 text-sm leading-tight line-clamp-2 group-hover:text-gray-700 transition-colors cursor-pointer"
+          onClick={handleProductClick}
+        >
           {product.name}
         </h3>
 
@@ -193,7 +212,7 @@ export function ProductCard({ product }: ProductCardProps) {
                               ))}
                             </div>
                             <span className="text-sm text-gray-600">
-                              {product.rating} {product.reviews && `(${product.reviews} reviews)`}
+                              {product.rating}
                             </span>
                           </>
                         )}
