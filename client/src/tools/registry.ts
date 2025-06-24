@@ -8,6 +8,7 @@ import { navigatePageDefinition, navigatePageHandler } from './navigatePage';
 import { getAvailablePagesDefinition, getAvailablePagesHandler } from './getAvailablePages';
 import { searchProductsDefinition, searchProductsHandler } from './searchProducts';
 import { applyProductFiltersDefinition, applyProductFiltersHandler } from './applyProductFilters';
+import { openFloatingChatDefinition, openFloatingChatHandler } from './openFloatingChat';
 
 // Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
@@ -46,6 +47,10 @@ export const toolRegistry: ToolRegistry = {
   apply_product_filters: {
     definition: applyProductFiltersDefinition,
     handler: applyProductFiltersHandler
+  },
+  open_floating_chat: {
+    definition: openFloatingChatDefinition,
+    handler: openFloatingChatHandler
   }
 };
 

@@ -158,6 +158,19 @@ Your tool is now automatically available to the OpenAI model. The WebRTC client 
   - "Show expensive products over $1000"
   - "Sort products by rating"
 
+### UI Tools
+
+#### open_floating_chat
+- **Purpose**: Open the floating chat widget for text-based support
+- **Parameters**:
+  - `mode` (optional): "welcome" or "chat" mode
+  - `message` (optional): Initial message to send in chat
+- **Usage**:
+  - "Open the chat widget"
+  - "Show me the text chat"
+  - "Open chat with a message about my order"
+  - "Switch to text-based support"
+
 ## Available Categories
 - Audio, Wearables, Photography, Furniture, Lighting
 - Computers, Phones, Electronics, Gaming, Accessories

@@ -2,6 +2,7 @@ import { Navigation } from './components/Navigation';
 import { Homepage } from './components/Homepage';
 import { Products } from './components/Products';
 import { Util } from './components/Util';
+import { FloatingChat } from './components/FloatingChat';
 import { useRouter } from './hooks/useRouter';
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
       <main className="flex-1">
         {renderPage()}
       </main>
+      <FloatingChat />
     </div>
   );
 }
