@@ -57,7 +57,9 @@ export const searchProductsHandler: ToolHandler = {
       if (args.sort) params.sort = args.sort;
       
       // Navigate to products page with search parameters
+      console.log('🔍 Navigating to products with params:', params);
       navigateTo('products', params);
+      console.log('🔍 Navigation completed, current URL:', window.location.href);
       
       // Build result message
       let message = `Searching for "${args.search_term}"`;
@@ -94,4 +96,4 @@ export const searchProductsHandler: ToolHandler = {
       };
     }
   }
-}; 
+};

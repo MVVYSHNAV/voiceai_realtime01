@@ -47,6 +47,7 @@ export function Products() {
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [urlChangeCounter, setUrlChangeCounter] = useState(0); // Force re-render trigger
   const itemsPerPage = 12; // Increased to 12 for 4x3 grid
 
   // Update URL when filters change
@@ -93,6 +94,59 @@ export function Products() {
     setSortBy(urlSort);
     setCurrentPage(urlPage);
     setIsInitialized(true);
+  }, []);
+
+  // Listen for URL changes (e.g., from tool calls)
+  useEffect(() => {
+    const handlePopState = () => {
+      console.log('Products: popstate event triggered, updating from URL');
+      const urlSearch = getQueryParam('search') || '';
+      const urlCategory = getQueryParam('category') || '';
+      const urlBrand = getQueryParam('brand') || '';
+      const urlMinPrice = parseInt(getQueryParam('minPrice') || '0');
+      const urlMaxPrice = parseInt(getQueryParam('maxPrice') || '2000');
+      const urlSort = (getQueryParam('sort') as SortOption) || 'featured';
+      const urlPage = parseInt(getQueryParam('page') || '1');
+
+      console.log('Products: URL params:', { urlSearch, urlCategory, urlBrand, urlMinPrice, urlMaxPrice, urlSort, urlPage });
+
+      setSearchTerm(urlSearch);
+      setSelectedCategory(urlCategory);
+      setSelectedBrand(urlBrand);
+      setMinPrice(urlMinPrice);
+      setMaxPrice(urlMaxPrice);
+      setSortBy(urlSort);
+      setCurrentPage(urlPage);
+      setUrlChangeCounter(prev => prev + 1); // Force re-render
+    };
+
+    const handleLocationChange = () => {
+      console.log('Products: custom locationchange event triggered');
+      handlePopState();
+    };
+
+    // Listen for popstate events (triggered by navigation utilities)
+    window.addEventListener('popstate', handlePopState);
+    
+    // Also listen for custom navigation events
+    window.addEventListener('locationchange', handleLocationChange);
+
+    // Fallback: Poll for URL changes every 500ms as a backup
+    const pollInterval = setInterval(() => {
+      const currentUrl = window.location.href;
+      const lastUrl = (window as any)._lastUrl;
+      if (currentUrl !== lastUrl) {
+        console.log('Products: URL change detected via polling');
+        (window as any)._lastUrl = currentUrl;
+        handlePopState();
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('locationchange', handleLocationChange);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   // Get unique categories and brands
@@ -148,6 +202,10 @@ export function Products() {
   // Reset to first page when filters change and update URL
   useEffect(() => {
     if (!isInitialized) return; // Don't update URL during initial load
+    
+    console.log('Products: Filters changed, current state:', {
+      searchTerm, selectedCategory, selectedBrand, minPrice, maxPrice, sortBy, currentPage
+    });
     
     if (currentPage > 1) {
       setCurrentPage(1);

@@ -29,6 +29,9 @@ export function navigateTo(path: string, params?: Record<string, string | number
   
   // Dispatch a custom event to notify listeners
   window.dispatchEvent(new PopStateEvent('popstate'));
+  
+  // Also dispatch a custom locationchange event for additional reliability
+  window.dispatchEvent(new CustomEvent('locationchange', { detail: { url, path: cleanPath, params } }));
 }
 
 /**
@@ -96,6 +99,9 @@ export function replacePath(path: string, params?: Record<string, string | numbe
   
   window.history.replaceState({}, '', url);
   window.dispatchEvent(new PopStateEvent('popstate'));
+  
+  // Also dispatch a custom locationchange event for additional reliability
+  window.dispatchEvent(new CustomEvent('locationchange', { detail: { url, path: cleanPath, params } }));
 }
 
 /**
