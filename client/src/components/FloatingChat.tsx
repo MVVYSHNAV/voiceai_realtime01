@@ -388,7 +388,7 @@ export function FloatingChat() {
                     className="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1 1 21 12z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1221 12z" />
                     </svg>
                     Start Chat
                   </button>
@@ -658,7 +658,7 @@ export function FloatingChat() {
           aria-label="Open chat"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1 1 21 12z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1221 12z" />
           </svg>
         </button>
       )}

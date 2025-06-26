@@ -1,26 +1,19 @@
-import { useState, useEffect } from 'react';
-import { getCurrentPath, onRouteChange, navigateTo } from '../utils/navigation';
+// hooks/useRouter.ts
+import { useEffect, useState } from 'react';
+import { getCurrentPath, onRouteChange } from '../utils/navigation';
 
 export function useRouter() {
-  const [currentPath, setCurrentPath] = useState('');
+  const [currentPath, setCurrentPath] = useState(getCurrentPath());
 
   useEffect(() => {
-    // Set initial path using utility function
-    setCurrentPath(getCurrentPath());
-
-    // Listen for route changes using utility function
-    const cleanup = onRouteChange((newPath) => {
-      setCurrentPath(newPath);
-    });
-
-    // Cleanup listener on unmount
+    const cleanup = onRouteChange(setCurrentPath);
     return cleanup;
   }, []);
 
-  // Use the utility function for navigation
-  const navigate = (path: string) => {
-    navigateTo(path);
+  const navigate = (path: string, params?: Record<string, string | number>) => {
+    window.scrollTo(0, 0); // optional: scroll to top
+    import('../utils/navigation').then(nav => nav.navigateTo(path, params));
   };
 
   return { currentPath, navigate };
-} 
+}

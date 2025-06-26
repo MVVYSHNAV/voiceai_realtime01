@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useCart } from '../hooks/useCart';
+import { useCartContext } from '../context/CartContext';
+
 import { navigateTo } from '../utils/navigation';
 import type { Product } from '../types/product';
 
@@ -8,17 +9,16 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const { addToCart } = useCart();
+  const { addToCart } = useCartContext();
   const [isFavorited, setIsFavorited] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
 
-  const handleAddToCart = () => {
+   const handleAddToCart = () => {
     addToCart({
       id: product.id,
       name: product.name,
-      brand: product.brand,
-      price: product.price,
       image: product.image,
+      price: product.price,
       quantity: 1
     });
   };

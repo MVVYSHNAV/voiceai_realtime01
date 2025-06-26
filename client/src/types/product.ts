@@ -14,6 +14,21 @@ export interface Product {
   specifications?: Record<string, string>;
 }
 
+export interface ToolDefinition {
+  type: 'function';
+  name: string;
+  description: string;
+  parameters: {
+    type: 'object';
+    properties: Record<string, any>;
+    required?: string[];
+  };
+}
+
+export interface ToolHandler {
+  execute: (params: any) => Promise<any>;
+}
+
 export interface Review {
   id: number;
   userName: string;
@@ -28,11 +43,11 @@ export interface Review {
 export interface CartItem {
   id: number;
   name: string;
-  brand: string;
   price: number;
-  image: string;
   quantity: number;
+  image?: string;
 }
+
 
 export type SortOption = 'featured' | 'price-low' | 'price-high' | 'rating' | 'newest';
 

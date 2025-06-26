@@ -100,11 +100,46 @@ export function Util() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight mb-4 text-gray-900">Utility Tools</h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Test navigation utilities and URL parameter handling for the products page.
+            Test navigation utilities, URL parameter handling, and voice agent features.
           </p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+          {/* Voice Agent Testing */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Voice Agent Auto-Collapse Test</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Test the auto-collapse functionality of the voice agent call interface.
+            </p>
+            
+            <div className="space-y-3">
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('openFloatingChat', {
+                    detail: { mode: 'call' }
+                  }));
+                }}
+                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+              >
+                🎤 Start Voice Call (Test Auto-Collapse)
+              </button>
+              
+              <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
+                <strong>Expected behavior:</strong><br/>
+                1. Click button to start voice call<br/>
+                2. Call widget appears in expanded mode<br/>
+                3. Connection establishes (watch console logs)<br/>
+                4. Widget automatically collapses after 2.5 seconds<br/>
+                5. Collapsed widget shows timer and controls<br/>
+                6. Test the fixed end call (phone) and expand icons
+              </div>
+              
+              <div className="text-xs text-blue-600 bg-blue-50 p-3 rounded-lg">
+                <strong>💡 Tip:</strong> Open browser console (F12) to see detailed logs of the auto-collapse process.
+              </div>
+            </div>
+          </div>
+
           {/* Navigation Utilities */}
           <div>
             <NavigationExample />

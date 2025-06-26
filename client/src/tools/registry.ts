@@ -1,4 +1,5 @@
-import { ToolRegistry } from './types';
+import type { ToolRegistry } from './types';
+
 import { loggerDefinition, loggerHandler } from './logger';
 import { getCurrentTimeDefinition, getCurrentTimeHandler } from './getCurrentTime';
 import { sendEmailDefinition, sendEmailHandler } from './sendEmail';
@@ -11,13 +12,17 @@ import { applyProductFiltersDefinition, applyProductFiltersHandler } from './app
 import { openFloatingChatDefinition, openFloatingChatHandler } from './openFloatingChat';
 import { viewProductDefinition, viewProductHandler } from './viewProduct';
 import { openProductDefinition, openProductHandler } from './openProduct';
-import { testOpenProductDefinition, testOpenProductHandler } from './testOpenProduct';
 import { getContextDefinition, getContextHandler } from './getContext';
 import { testContextDefinition, testContextHandler } from './testContext';
 import { testLoggerDefinition, testLoggerHandler } from './testLogger';
 import { debugToolsDefinition, debugToolsHandler } from './debugTools';
+import { getSpecificationDefinition, getSpecificationHandler } from './getSpecification';
+import { addToCartDefinition, addToCartHandler } from './addToCart';
+import { getCartContentsDefinition, getCartContentsHandler } from './getCartContent';
+import { placeOrderDefinition, placeOrderHandler } from './placeOrder';
+import { generateInvoiceDefinition, generateInvoiceHandler } from './generateInvoice';
+import { recommendProductDefinition, recommendProductHandler } from './recommendationTool';
 
-// Central registry of all available tools
 export const toolRegistry: ToolRegistry = {
   logger: {
     definition: loggerDefinition,
@@ -67,10 +72,6 @@ export const toolRegistry: ToolRegistry = {
     definition: openProductDefinition,
     handler: openProductHandler
   },
-  test_open_product: {
-    definition: testOpenProductDefinition,
-    handler: testOpenProductHandler
-  },
   get_context: {
     definition: getContextDefinition,
     handler: getContextHandler
@@ -87,14 +88,52 @@ export const toolRegistry: ToolRegistry = {
     definition: debugToolsDefinition,
     handler: debugToolsHandler
   },
-  // Add camelCase alias for getContext in case OpenAI is calling it that way
+
+  // Aliases for naming compatibility with different casing
   getContext: {
     definition: getContextDefinition,
     handler: getContextHandler
+  },
+  getSpecification: {
+    definition: getSpecificationDefinition,
+    handler: getSpecificationHandler
+  },
+
+
+  add_to_cart: {
+    definition: addToCartDefinition,
+    handler: addToCartHandler
+  },
+
+  getCartContents: {
+    definition: getCartContentsDefinition,
+    handler: getCartContentsHandler
+  },
+
+  place_order: {
+    definition: placeOrderDefinition,
+    handler: placeOrderHandler
+  },
+  
+  generate_invoice: {
+    definition: generateInvoiceDefinition,
+    handler: generateInvoiceHandler
+  },
+
+  getRecommendation: {
+    definition: recommendProductDefinition,
+    handler: recommendProductHandler
+  },
+  recommend_product: {
+    definition: recommendProductDefinition,
+    handler: recommendProductHandler
   }
 };
 
-// Helper functions for WebRTC client
+// ==============================
+// ✅ Tool utility exports
+// ==============================
+
 export function getAllToolDefinitions() {
   return Object.values(toolRegistry).map(tool => tool.definition);
 }
@@ -105,4 +144,4 @@ export function getToolHandler(toolName: string) {
 
 export function isToolRegistered(toolName: string): boolean {
   return toolName in toolRegistry;
-} 
+}
