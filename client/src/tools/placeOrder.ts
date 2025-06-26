@@ -1,10 +1,19 @@
 // tools/placeOrder.ts
 import { ToolDefinition, ToolHandler } from './types';
-import { getCart } from '../app/cartStore';
+import type { CartItem } from '../types/product';
+
+let getCartCallback: (() => { items: CartItem[]; total: number }) | null = null;
+
+// Register function from CartContext
+export const registerPlaceOrderCartFunction = (
+  fn: () => { items: CartItem[]; total: number }
+) => {
+  getCartCallback = fn;
+};
 
 export const placeOrderDefinition: ToolDefinition = {
   type: 'function',
-  name: 'placeOrder',
+  name: 'place_order',
   description: 'Place an order using name, email, address, and items in the cart.',
   parameters: {
     type: 'object',
@@ -19,13 +28,19 @@ export const placeOrderDefinition: ToolDefinition = {
 
 export const placeOrderHandler: ToolHandler = {
   execute: async ({ name, email, address }) => {
-    const cart = getCart();
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-    if (cart.length === 0) {
+    if (!getCartCallback) {
       return {
         success: false,
-        message: '❌ Cart is empty. Cannot place order.'
+        message: '❌ Cart context not available. Cannot place order.',
+      };
+    }
+
+    const { items: cart, total } = getCartCallback();
+
+    if (!Array.isArray(cart) || cart.length === 0) {
+      return {
+        success: false,
+        message: '❌ Cart is empty. Cannot place order.',
       };
     }
 

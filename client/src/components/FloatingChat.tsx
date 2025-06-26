@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { navigateTo } from '../utils/navigation';
 import { WebRTCClient } from '../webrtc';
+import Assistant from '../assets/aiphoto.png'
 
 interface Message {
   id: string;
@@ -70,13 +71,12 @@ export function FloatingChat() {
       setIsOpen(true);
       if (eventMode === 'call') {
         setMode('call');
-        setIsCallCollapsed(false); // Ensure call is expanded when explicitly opened
+        setIsCallCollapsed(false);
         handleStartVoiceCall();
       } else {
         setMode(eventMode || 'welcome');
       }
       
-      // If there's an initial message, add it to the chat
       if (message && eventMode === 'chat') {
         setTimeout(() => {
           handleSendMessage(message);
@@ -104,19 +104,14 @@ export function FloatingChat() {
   const handleSendMessage = async (text: string) => {
     if (!text.trim()) return;
 
-    // Add user message to chat
     addMessage('user', text.trim());
     setInputValue('');
 
     if (isConnected && webrtcRef.current) {
-      // Send via WebRTC if connected
       webrtcRef.current.sendTextMessage(text.trim(), 'user');
       setIsTyping(true);
       
-      // Simulate response handling since we can't directly listen to WebRTC events
-      // In a real implementation, you'd listen to the actual WebRTC response events
       setTimeout(() => {
-        // Simulate AI response
         const responses = [
           `I understand you're asking about "${text}". Let me help you with that.`,
           `Thanks for your question about "${text}". I'm processing that information now.`,
@@ -127,9 +122,7 @@ export function FloatingChat() {
         addMessage('bot', randomResponse);
         setIsTyping(false);
       }, 2000);
-      
     } else {
-      // Fallback to simulated response
       setIsTyping(true);
       setTimeout(() => {
         let botResponse = `Thanks for your message: "${text}". I'm here to help!`;
@@ -151,21 +144,30 @@ export function FloatingChat() {
     }
   };
 
+  const simulateAISpeaking = (text: string, onComplete?: () => void) => {
+    setSessionStatus('speaking');
+    addMessage('bot', text);
+    
+    const duration = Math.max(2000, Math.min(5000, text.length * 100));
+    
+    setTimeout(() => {
+      setSessionStatus('listening');
+      if (onComplete) onComplete();
+    }, duration);
+  };
+
   const handleStartVoiceCall = async () => {
-    // Prevent multiple connections - kill any existing connection first
     if (webrtcRef.current) {
       console.log('Cleaning up existing WebRTC connection...');
       webrtcRef.current.cleanup();
       webrtcRef.current = null;
     }
     
-    // Clear any existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
     
-    // Clear any existing sync cleanup
     if (syncCleanupRef.current) {
       syncCleanupRef.current();
       syncCleanupRef.current = null;
@@ -176,7 +178,6 @@ export function FloatingChat() {
       setSessionStatus('connecting');
       setElapsedTime(0);
       
-      // Start timer
       timerRef.current = setInterval(() => {
         setElapsedTime(prev => prev + 1);
       }, 1000);
@@ -184,30 +185,23 @@ export function FloatingChat() {
       webrtcRef.current = new WebRTCClient({ 
         logSystemEvents: false,
         onConnectionEstablished: () => {
-          // This callback is triggered when the data channel opens
-          console.log('🎯 WebRTC connection established - triggering auto-collapse sequence');
           setIsConnected(true);
-          setSessionStatus('listening');
           
-          // Add call start message
-          addMessage('bot', 'Voice call connected! I can hear you now. How can I help you today?');
-          
-          // Auto-collapse after a short delay to let user see the connection message
-          console.log('⏰ Setting auto-collapse timer for 2.5 seconds');
-          setTimeout(() => {
-            console.log('🔄 Auto-collapse timer fired - collapsing call widget');
-            setIsCallCollapsed(true);
-          }, 2500);
+          // AI speaks welcome message first
+          const welcomeMessage = "Hello! I'm Fathima, your AI assistant. How can I help you today?";
+          simulateAISpeaking(welcomeMessage, () => {
+            // After speaking completes, auto-collapse
+            setTimeout(() => {
+              setIsCallCollapsed(true);
+            }, 2500);
+          });
         }
       });
+      
       syncCleanupRef.current = setupWebRTCEventHandlers();
-      
       await webrtcRef.current.initWebRTC();
-      
-      // Set mode to call but don't set connected state yet
       setMode('call');
       
-      // Sync microphone mute state with WebRTC
       if (micMuted) {
         webrtcRef.current.setMicrophoneMuted(true);
       }
@@ -217,19 +211,12 @@ export function FloatingChat() {
       setError(err instanceof Error ? err.message : 'Failed to connect');
       setIsConnected(false);
       setSessionStatus('idle');
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-      // Clean up the failed connection
-      if (webrtcRef.current) {
-        webrtcRef.current.cleanup();
-        webrtcRef.current = null;
-      }
-      if (syncCleanupRef.current) {
-        syncCleanupRef.current();
-        syncCleanupRef.current = null;
-      }
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (webrtcRef.current) webrtcRef.current.cleanup();
+      if (syncCleanupRef.current) syncCleanupRef.current();
+      timerRef.current = null;
+      webrtcRef.current = null;
+      syncCleanupRef.current = null;
     }
   };
 
@@ -254,7 +241,6 @@ export function FloatingChat() {
     setIsCallCollapsed(false);
     setMode('chat');
     
-    // Add call end message
     const duration = formatTime(elapsedTime);
     addMessage('bot', `Voice call ended. Duration: ${duration}. Is there anything else I can help you with?`);
   };
@@ -262,20 +248,10 @@ export function FloatingChat() {
   const setupWebRTCEventHandlers = (): (() => void) | null => {
     if (!webrtcRef.current) return null;
 
-    // Since we can't directly modify the WebRTC class, we'll poll for status changes
-    // In a real implementation, you'd extend WebRTCClient to emit custom events
-    
-    // For now, we'll simulate the event handling based on the WebRTC connection state
     const checkConnectionStatus = () => {
       if (!webrtcRef.current) return;
       
-      // This is a simplified status check - in reality you'd want to listen to actual WebRTC events
-      // The WebRTC client would need to be extended to emit events for:
-      // - speech_started, speech_stopped, response_started, response_done, etc.
-      
-      // For demonstration, we'll simulate some status changes
       if (sessionStatus === 'connecting') {
-        // Connection established, now listening
         setTimeout(() => {
           if (sessionStatus === 'connecting') {
             setSessionStatus('listening');
@@ -284,7 +260,6 @@ export function FloatingChat() {
       }
     };
 
-    // Sync microphone mute state periodically
     const syncMicrophoneState = () => {
       if (webrtcRef.current) {
         const actualMutedState = webrtcRef.current.isMicrophoneMuted();
@@ -296,10 +271,8 @@ export function FloatingChat() {
 
     checkConnectionStatus();
     
-    // Set up periodic sync for microphone state
     const syncInterval = setInterval(syncMicrophoneState, 1000);
     
-    // Clean up interval when component unmounts or connection changes
     return () => {
       clearInterval(syncInterval);
     };
@@ -350,23 +323,19 @@ export function FloatingChat() {
     setMode('chat');
   };
 
-  // Waveform component for voice call
   const Waveform = () => (
     <div className="flex items-center justify-center gap-1 h-12 mb-4">
       {[...Array(7)].map((_, i) => (
         <div
           key={i}
-          className={`w-1.5 bg-blue-500 rounded-full transition-all duration-300 ${
-            sessionStatus === 'listening' ? 'animate-pulse' : ''
+          className={`w-1.5 rounded-full transition-all duration-300 ${
+            sessionStatus === 'speaking' ? 'bg-green-500 animate-pulse' :
+            sessionStatus === 'listening' ? 'bg-blue-500 animate-pulse' : 'bg-gray-300'
           }`}
           style={{
-            height: sessionStatus === 'listening' 
-              ? `${Math.random() * 30 + 10}px` 
-              : sessionStatus === 'speaking'
-              ? `${Math.random() * 40 + 15}px`
-              : '8px',
-            animationDelay: `${i * 0.15}s`,
-            backgroundColor: sessionStatus === 'speaking' ? '#10b981' : '#3b82f6'
+            height: sessionStatus === 'speaking' ? `${Math.random() * 30 + 15}px` :
+                   sessionStatus === 'listening' ? `${Math.random() * 20 + 8}px` : '8px',
+            animationDelay: `${i * 0.1}s`,
           }}
         />
       ))}
@@ -381,7 +350,6 @@ export function FloatingChat() {
           className="mb-2.5 w-56 h-16 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 flex items-center justify-between px-4 transition-all duration-200 ease-in-out hover:shadow-xl cursor-pointer animate-bounce-in"
           onClick={() => setIsCallCollapsed(false)}
         >
-          {/* Call Status */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <div 
@@ -394,9 +362,7 @@ export function FloatingChat() {
             </div>
           </div>
 
-          {/* Controls */}
           <div className="flex items-center gap-1">
-            {/* Mic Toggle */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -423,7 +389,6 @@ export function FloatingChat() {
               )}
             </button>
 
-            {/* End Call */}
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -437,7 +402,6 @@ export function FloatingChat() {
               </svg>
             </button>
 
-            {/* Expand */}
             <button
               onClick={() => setIsCallCollapsed(false)}
               className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors ml-1"
@@ -455,14 +419,12 @@ export function FloatingChat() {
       {isOpen && !isCallCollapsed && (
         <div className="mb-2.5 w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 ease-in-out transform">
           {mode === 'welcome' ? (
-            // Welcome Screen
             <div className="flex flex-col h-full">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                    F
-                  </div>
+                  {/* <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  </div> */}
+                  <img src={Assistant} alt="assitant" className='w-8 h-8 rounded-full'/> 
                   <span className="font-semibold text-gray-900">Fathima - Support</span>
                 </div>
                 <button
@@ -475,13 +437,14 @@ export function FloatingChat() {
                 </button>
               </div>
 
-              {/* Welcome Content */}
               <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
                 <div className="relative mb-6">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">
+                  {/* <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl relative z-10">
                     F
-                  </div>
-                  <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping"></div>
+                  </div> */}
+                  <img src={Assistant} alt="assitant" className='w-16 h-16 rounded-full'/> 
+                  <div className="absolute inset-0 bg-blue-200 rounded-full motion-safe:animate-ping"></div>
+                
                 </div>
 
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Hi! I'm Fathima</h3>
@@ -536,9 +499,7 @@ export function FloatingChat() {
               </div>
             </div>
           ) : mode === 'call' ? (
-            // Voice Call Screen
             <div className="flex flex-col h-full">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="relative">
@@ -547,6 +508,7 @@ export function FloatingChat() {
                     </div>
                     {isConnected && (
                       <div className="absolute inset-0 bg-blue-400 rounded-full animate-ping"></div>
+                      
                     )}
                   </div>
                   <div>
@@ -575,7 +537,6 @@ export function FloatingChat() {
                 </div>
               </div>
 
-              {/* Call Content */}
               <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-50">
                 <div className="text-center mb-6">
                   <Waveform />
@@ -602,13 +563,11 @@ export function FloatingChat() {
                   )}
                 </div>
 
-                {/* Call Controls */}
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => {
                       const newMutedState = !micMuted;
                       setMicMuted(newMutedState);
-                      // Actually mute/unmute the microphone in WebRTC
                       if (webrtcRef.current) {
                         webrtcRef.current.setMicrophoneMuted(newMutedState);
                       }
@@ -673,9 +632,7 @@ export function FloatingChat() {
               </div>
             </div>
           ) : (
-            // Chat Screen
             <div className="flex flex-col h-full">
-              {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
@@ -693,7 +650,6 @@ export function FloatingChat() {
                 </button>
               </div>
 
-              {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map((message) => (
                   <div
@@ -738,7 +694,6 @@ export function FloatingChat() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Quick Actions */}
               <div className="px-4 py-2 border-t border-gray-100">
                 <div className="flex flex-wrap gap-2">
                   {quickActions.map((action) => (
@@ -753,7 +708,6 @@ export function FloatingChat() {
                 </div>
               </div>
 
-              {/* Input */}
               <div className="p-4 border-t border-gray-100">
                 <div className="flex gap-2">
                   <input
@@ -804,7 +758,6 @@ export function FloatingChat() {
         </div>
       )}
 
-      {/* Floating Button - only show when chat is closed and no collapsed call */}
       {!isOpen && !(mode === 'call' && isCallCollapsed) && (
         <button
           onClick={() => setIsOpen(true)}
@@ -818,4 +771,4 @@ export function FloatingChat() {
       )}
     </div>
   );
-} 
+}

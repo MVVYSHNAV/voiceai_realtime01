@@ -1,4 +1,5 @@
 import { useCartContext } from '../context/CartContext';
+import { navigateTo } from '../utils/navigation';
 
 const Cart = () => {
   const { cartItems, getCartTotal, removeFromCart, updateQuantity } = useCartContext();
@@ -95,15 +96,30 @@ const Cart = () => {
                     <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                       ₹{getCartTotal()}
                     </span>
+                    
                   </div>
                 </div>
               </div>
             </div>
           )}
         </div>
+        <div className="mt-6 flex justify-between gap-4">
+            <button
+              onClick={() => navigateTo("/")}
+              className="px-6 py-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-medium border border-slate-300 shadow-sm transition"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={() => navigateTo("Billing")}
+              className="px-6 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-700 hover:to-indigo-700 transition"
+            >
+              Proceed to Checkout →
+            </button>
+          </div>
       </div>
     </div>
-  );
+            );
 };
 
 export default Cart;

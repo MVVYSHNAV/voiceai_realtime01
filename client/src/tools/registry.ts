@@ -68,10 +68,10 @@ export const toolRegistry: ToolRegistry = {
     definition: viewProductDefinition,
     handler: viewProductHandler
   },
-  open_product: {
-    definition: openProductDefinition,
-    handler: openProductHandler
-  },
+  // open_product: {
+  //   definition: openProductDefinition,
+  //   handler: openProductHandler
+  // },
   get_context: {
     definition: getContextDefinition,
     handler: getContextHandler
@@ -114,15 +114,8 @@ export const toolRegistry: ToolRegistry = {
     definition: placeOrderDefinition,
     handler: placeOrderHandler
   },
-  placeOrder: {
-    definition: placeOrderDefinition,
-    handler: placeOrderHandler
-  },
+  
 
-  generateInvoice: {
-    definition: generateInvoiceDefinition,
-    handler: generateInvoiceHandler
-  },
   generate_invoice: {
     definition: generateInvoiceDefinition,
     handler: generateInvoiceHandler

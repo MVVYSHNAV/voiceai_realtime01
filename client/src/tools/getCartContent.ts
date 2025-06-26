@@ -4,7 +4,6 @@ import type { CartItem } from '../types/product';
 
 let getCartCallback: (() => { items: CartItem[]; total: number }) | null = null;
 
-// This is called from CartContext.tsx
 export const registerGetCartFunction = (
   fn: () => { items: CartItem[]; total: number }
 ) => {

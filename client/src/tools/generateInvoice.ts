@@ -1,6 +1,15 @@
+// tools/generateInvoice.ts
 import type { ToolDefinition, ToolHandler } from './types';
-import { getCart } from '../app/cartStore';
+import type { CartItem } from '../types/product';
 import { navigateTo } from '../utils/navigation';
+
+let getCartCallback: (() => { items: CartItem[]; total: number }) | null = null;
+
+export const registerInvoiceCartFunction = (
+  fn: () => { items: CartItem[]; total: number }
+) => {
+  getCartCallback = fn;
+};
 
 export const generateInvoiceDefinition: ToolDefinition = {
   type: 'function',
@@ -19,7 +28,14 @@ export const generateInvoiceDefinition: ToolDefinition = {
 
 export const generateInvoiceHandler: ToolHandler = {
   execute: async ({ name, email, address }) => {
-    const cart = getCart();
+    if (!getCartCallback) {
+      return {
+        success: false,
+        message: '❌ Cannot generate invoice: cart context not available.'
+      };
+    }
+
+    const { items: cart, total } = getCartCallback();
 
     if (!cart || cart.length === 0) {
       return {
@@ -28,21 +44,19 @@ export const generateInvoiceHandler: ToolHandler = {
       };
     }
 
-    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const tax = total * 0.05;
     const grand = total + tax;
 
     const invoice = {
+      invoiceNo: `INV-${Date.now().toString().slice(-6)}`,
+      date: new Date().toISOString(),
       customer: { name, email, address },
       items: cart,
       total,
       tax,
-      grand,
-      invoiceNo: `INV-${Date.now().toString().slice(-6)}`,
-      date: new Date().toISOString()
+      grand
     };
 
-    // ✅ Navigate to Billing page
     navigateTo('Billing');
 
     return {

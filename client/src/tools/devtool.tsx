@@ -179,7 +179,7 @@ export default function DevToolsPage() {
 
         {/* Footer */}
         <div className="text-center mt-8 text-slate-500 text-sm">
-          <p>Built with React & Tailwind CSS</p>
+          <p>Test your Tool</p>
         </div>
       </div>
     </div>
