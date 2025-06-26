@@ -1,10 +1,15 @@
 // context/RecommendedContext.tsx
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 import type { Product } from '../types/product';
 
-const RecommendedContext = createContext<any>(null);
+interface RecommendedContextType {
+  recommendedProduct: Product | null;
+  setRecommendedProduct: (product: Product | null) => void;
+}
 
-export function RecommendedProvider({ children }: { children: React.ReactNode }) {
+const RecommendedContext = createContext<RecommendedContextType | undefined>(undefined);
+
+export function RecommendedProvider({ children }: { children: ReactNode }) {
   const [recommendedProduct, setRecommendedProduct] = useState<Product | null>(null);
 
   return (
@@ -14,4 +19,10 @@ export function RecommendedProvider({ children }: { children: React.ReactNode })
   );
 }
 
-export const useRecommendedProduct = () => useContext(RecommendedContext);
+export const useRecommendedProduct = (): RecommendedContextType => {
+  const context = useContext(RecommendedContext);
+  if (!context) {
+    throw new Error('useRecommendedProduct must be used within a RecommendedProvider');
+  }
+  return context;
+};

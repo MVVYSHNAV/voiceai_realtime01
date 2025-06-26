@@ -114,16 +114,20 @@ export const toolRegistry: ToolRegistry = {
     definition: placeOrderDefinition,
     handler: placeOrderHandler
   },
-  
+  placeOrder: {
+    definition: placeOrderDefinition,
+    handler: placeOrderHandler
+  },
+
+  generateInvoice: {
+    definition: generateInvoiceDefinition,
+    handler: generateInvoiceHandler
+  },
   generate_invoice: {
     definition: generateInvoiceDefinition,
     handler: generateInvoiceHandler
   },
 
-  getRecommendation: {
-    definition: recommendProductDefinition,
-    handler: recommendProductHandler
-  },
   recommend_product: {
     definition: recommendProductDefinition,
     handler: recommendProductHandler

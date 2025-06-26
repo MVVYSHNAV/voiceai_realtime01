@@ -481,7 +481,88 @@
       "inStock": false,
       "description": "Retractable tonneau cover for Tesla Cybertruck",
       "features": ["Retractable design", "Weather sealed", "Integrated solar", "Remote control"]
+    },
+ 
+    {
+      "id": 37,
+      "name": "Noise Air Clips OWS Earbuds",
+      "price": 2799,
+      "rating": 4.7,
+      "reviews": 393,
+      "image": "https://images.pexels.com/photos/3394650/pexels-photo-3394650.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Audio",
+      "brand": "Noise",
+      "inStock": true,
+      "description": "Open-ear design for safer outdoor listening",
+      "features": ["Open-ear design", "Bluetooth 5.3", "Touch controls", "Sweat-resistant"]
+    },
+    {
+      "id": 38,
+      "name": "boAt Airdopes Progear Earbuds",
+      "price": 1499,
+      "rating": 3.8,
+      "reviews": 95,
+      "image": "https://images.pexels.com/photos/3780681/pexels-photo-3780681.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Audio",
+      "brand": "boAt",
+      "inStock": true,
+      "description": "Budget-friendly open-ear earbuds",
+      "features": ["Open-fit design", "Low latency mode", "IPX4 rated", "Voice assistant support"]
+    },
+    {
+      "id": 39,
+      "name": "Urban Armor Gear MagSafe Charger",
+      "price": 4049.10,
+      "rating": 4.3,
+      "reviews": 111,
+      "image": "https://images.pexels.com/photos/1128440/pexels-photo-1128440.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Accessories",
+      "brand": "Urban Armor Gear",
+      "inStock": true,
+      "description": "MagSafe wireless charging pad with stand",
+      "features": ["MagSafe compatible", "LED indicator", "Built-in stand", "Fast charging"]
+    },
+    {
+      "id": 40,
+      "name": "Portronics Mport One 9-in-1 Hub",
+      "price": 1030,
+      "rating": 4.4,
+      "reviews": 89,
+      "image": "https://images.pexels.com/photos/267614/pexels-photo-267614.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Computers",
+      "brand": "Portronics",
+      "inStock": true,
+      "description": "Multiport USB-C hub with 9 connectivity options",
+      "features": ["HDMI", "USB 3.0", "SD card reader", "Ethernet port"]
+    },
+    {
+      "id": 41,
+      "name": "TFG Mini A8 Recorder",
+      "price": 1314,
+      "rating": 4.0,
+      "reviews": 67,
+      "image": "https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Accessories",
+      "brand": "TFG",
+      "inStock": true,
+      "description": "Portable call and audio recording device",
+      "features": ["Voice-activated recording", "SIM-based tracking", "Compact design", "Long battery life"]
+    },
+    {
+      "id": 42,
+      "name": "Portronics World Tag Item Finder",
+      "price": 579,
+      "rating": 4.1,
+      "reviews": 145,
+      "image": "https://images.pexels.com/photos/132700/pexels-photo-132700.jpeg?auto=compress&cs=tinysrgb&w=600",
+      "category": "Accessories",
+      "brand": "Portronics",
+      "inStock": true,
+      "description": "Bluetooth tracker to find lost items",
+      "features": ["Bluetooth tracking", "App control", "Replaceable battery", "Loud buzzer alert"]
     }
+
+
   ],
   "categories": [
     "Audio",

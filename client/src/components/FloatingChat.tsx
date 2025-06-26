@@ -14,6 +14,7 @@ type SessionStatus = 'idle' | 'connecting' | 'listening' | 'speaking' | 'thinkin
 export function FloatingChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState<'welcome' | 'chat' | 'call'>('welcome');
+  const [isCallCollapsed, setIsCallCollapsed] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -36,6 +37,7 @@ export function FloatingChat() {
   const webrtcRef = useRef<WebRTCClient | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const syncCleanupRef = useRef<(() => void) | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -54,6 +56,9 @@ export function FloatingChat() {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
+      if (syncCleanupRef.current) {
+        syncCleanupRef.current();
+      }
     };
   }, []);
 
@@ -65,6 +70,7 @@ export function FloatingChat() {
       setIsOpen(true);
       if (eventMode === 'call') {
         setMode('call');
+        setIsCallCollapsed(false); // Ensure call is expanded when explicitly opened
         handleStartVoiceCall();
       } else {
         setMode(eventMode || 'welcome');
@@ -158,6 +164,12 @@ export function FloatingChat() {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    
+    // Clear any existing sync cleanup
+    if (syncCleanupRef.current) {
+      syncCleanupRef.current();
+      syncCleanupRef.current = null;
+    }
 
     try {
       setError(null);
@@ -169,16 +181,36 @@ export function FloatingChat() {
         setElapsedTime(prev => prev + 1);
       }, 1000);
 
-      webrtcRef.current = new WebRTCClient({ logSystemEvents: false });
-      setupWebRTCEventHandlers();
+      webrtcRef.current = new WebRTCClient({ 
+        logSystemEvents: false,
+        onConnectionEstablished: () => {
+          // This callback is triggered when the data channel opens
+          console.log('🎯 WebRTC connection established - triggering auto-collapse sequence');
+          setIsConnected(true);
+          setSessionStatus('listening');
+          
+          // Add call start message
+          addMessage('bot', 'Voice call connected! I can hear you now. How can I help you today?');
+          
+          // Auto-collapse after a short delay to let user see the connection message
+          console.log('⏰ Setting auto-collapse timer for 2.5 seconds');
+          setTimeout(() => {
+            console.log('🔄 Auto-collapse timer fired - collapsing call widget');
+            setIsCallCollapsed(true);
+          }, 2500);
+        }
+      });
+      syncCleanupRef.current = setupWebRTCEventHandlers();
       
       await webrtcRef.current.initWebRTC();
-      setIsConnected(true);
-      setSessionStatus('listening');
+      
+      // Set mode to call but don't set connected state yet
       setMode('call');
       
-      // Add call start message
-      addMessage('bot', 'Voice call connected! I can hear you now. How can I help you today?');
+      // Sync microphone mute state with WebRTC
+      if (micMuted) {
+        webrtcRef.current.setMicrophoneMuted(true);
+      }
       
     } catch (err) {
       console.error('WebRTC connection failed:', err);
@@ -194,6 +226,10 @@ export function FloatingChat() {
         webrtcRef.current.cleanup();
         webrtcRef.current = null;
       }
+      if (syncCleanupRef.current) {
+        syncCleanupRef.current();
+        syncCleanupRef.current = null;
+      }
     }
   };
 
@@ -208,8 +244,14 @@ export function FloatingChat() {
       timerRef.current = null;
     }
     
+    if (syncCleanupRef.current) {
+      syncCleanupRef.current();
+      syncCleanupRef.current = null;
+    }
+    
     setIsConnected(false);
     setSessionStatus('idle');
+    setIsCallCollapsed(false);
     setMode('chat');
     
     // Add call end message
@@ -217,8 +259,8 @@ export function FloatingChat() {
     addMessage('bot', `Voice call ended. Duration: ${duration}. Is there anything else I can help you with?`);
   };
 
-  const setupWebRTCEventHandlers = () => {
-    if (!webrtcRef.current) return;
+  const setupWebRTCEventHandlers = (): (() => void) | null => {
+    if (!webrtcRef.current) return null;
 
     // Since we can't directly modify the WebRTC class, we'll poll for status changes
     // In a real implementation, you'd extend WebRTCClient to emit custom events
@@ -242,7 +284,25 @@ export function FloatingChat() {
       }
     };
 
+    // Sync microphone mute state periodically
+    const syncMicrophoneState = () => {
+      if (webrtcRef.current) {
+        const actualMutedState = webrtcRef.current.isMicrophoneMuted();
+        if (actualMutedState !== micMuted) {
+          setMicMuted(actualMutedState);
+        }
+      }
+    };
+
     checkConnectionStatus();
+    
+    // Set up periodic sync for microphone state
+    const syncInterval = setInterval(syncMicrophoneState, 1000);
+    
+    // Clean up interval when component unmounts or connection changes
+    return () => {
+      clearInterval(syncInterval);
+    };
   };
 
   const formatTime = (seconds: number): string => {
@@ -315,9 +375,85 @@ export function FloatingChat() {
 
   return (
     <div className="fixed bottom-2.5 right-4 z-50">
-      {/* Chat Widget */}
-      {isOpen && (
-        <div className="mb-2.5 w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
+      {/* Collapsed Call Widget */}
+      {mode === 'call' && isCallCollapsed && (
+        <div 
+          className="mb-2.5 w-56 h-16 bg-white/95 backdrop-blur-sm rounded-full shadow-lg border border-gray-200/50 flex items-center justify-between px-4 transition-all duration-200 ease-in-out hover:shadow-xl cursor-pointer animate-bounce-in"
+          onClick={() => setIsCallCollapsed(false)}
+        >
+          {/* Call Status */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-2.5 h-2.5 rounded-full animate-pulse"
+                style={{ backgroundColor: getStatusColor() }}
+              />
+              <span className="text-sm font-medium text-gray-700">
+                {formatTime(elapsedTime)}
+              </span>
+            </div>
+          </div>
+
+          {/* Controls */}
+          <div className="flex items-center gap-1">
+            {/* Mic Toggle */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newMutedState = !micMuted;
+                setMicMuted(newMutedState);
+                if (webrtcRef.current) {
+                  webrtcRef.current.setMicrophoneMuted(newMutedState);
+                }
+              }}
+              className={`p-2 rounded-full transition-colors ${
+                micMuted ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'
+              }`}
+              title={micMuted ? 'Unmute microphone' : 'Mute microphone'}
+            >
+              {micMuted ? (
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              )}
+            </button>
+
+            {/* End Call */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleEndCall();
+              }}
+              className="p-2 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors"
+              title="End call"
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6.54 5c.06.89.21 1.76.45 2.59l-1.2 1.2c-.41-1.2-.67-2.47-.76-3.79h1.51m9.86 12.02c.85.24 1.72.39 2.6.45v1.49c-1.32-.09-2.59-.35-3.8-.75l1.2-1.19M7.5 3H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.49c0-.55-.45-1-1-1-1.24 0-2.45-.2-3.57-.57-.35-.12-.75-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.2c.27-.27.36-.67.24-1.02C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1z"/>
+              </svg>
+            </button>
+
+            {/* Expand */}
+            <button
+              onClick={() => setIsCallCollapsed(false)}
+              className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full transition-colors ml-1"
+              title="Expand call"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Full Chat Widget */}
+      {isOpen && !isCallCollapsed && (
+        <div className="mb-2.5 w-80 h-96 bg-white rounded-xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden transition-all duration-300 ease-in-out transform">
           {mode === 'welcome' ? (
             // Welcome Screen
             <div className="flex flex-col h-full">
@@ -388,7 +524,7 @@ export function FloatingChat() {
                     className="w-full border border-gray-300 hover:bg-gray-50 text-gray-700 py-2.5 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm cursor-pointer"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1221 12z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1 1 21 12z" />
                     </svg>
                     Start Chat
                   </button>
@@ -418,14 +554,25 @@ export function FloatingChat() {
                     <span className="text-xs text-gray-500">{formatTime(elapsedTime)}</span>
                   </div>
                 </div>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setIsCallCollapsed(true)}
+                    className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
+                    title="Minimize call"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-1 hover:bg-gray-200 rounded-lg transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               </div>
 
               {/* Call Content */}
@@ -458,7 +605,14 @@ export function FloatingChat() {
                 {/* Call Controls */}
                 <div className="flex items-center gap-4">
                   <button
-                    onClick={() => setMicMuted(!micMuted)}
+                    onClick={() => {
+                      const newMutedState = !micMuted;
+                      setMicMuted(newMutedState);
+                      // Actually mute/unmute the microphone in WebRTC
+                      if (webrtcRef.current) {
+                        webrtcRef.current.setMicrophoneMuted(newMutedState);
+                      }
+                    }}
                     className={`p-3 rounded-full transition-colors ${
                       micMuted ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-600'
                     }`}
@@ -481,8 +635,8 @@ export function FloatingChat() {
                     className="p-4 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors shadow-lg"
                     title="End call"
                   >
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 3l18 18" />
+                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6.54 5c.06.89.21 1.76.45 2.59l-1.2 1.2c-.41-1.2-.67-2.47-.76-3.79h1.51m9.86 12.02c.85.24 1.72.39 2.6.45v1.49c-1.32-.09-2.59-.35-3.8-.75l1.2-1.19M7.5 3H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.49c0-.55-.45-1-1-1-1.24 0-2.45-.2-3.57-.57-.35-.12-.75-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.2c.27-.27.36-.67.24-1.02C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1z"/>
                     </svg>
                   </button>
 
@@ -650,15 +804,15 @@ export function FloatingChat() {
         </div>
       )}
 
-      {/* Floating Button - only show when chat is closed */}
-      {!isOpen && (
+      {/* Floating Button - only show when chat is closed and no collapsed call */}
+      {!isOpen && !(mode === 'call' && isCallCollapsed) && (
         <button
           onClick={() => setIsOpen(true)}
           className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center"
           aria-label="Open chat"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1221 12z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-3.582 8-8 8a8.955 8.955 0 01-2.8-.45l-3.5 2.1a.5.5 0 01-.7-.65L7.5 18.5A8 8 0 1 1 21 12z" />
           </svg>
         </button>
       )}
